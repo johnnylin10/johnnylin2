@@ -557,6 +557,8 @@
 'use strict';
 const $ = id => document.getElementById(id);
 
+const STK_ENDPOINT = "https://johnnylin.karanjajmwangi-10.workers.dev/api/stk-push";
+
 let plans = [
   {name:'1 Hour',title:'1 Hour',price:10,duration:'60 min',tag:'Quick'},
   {name:'3 Hours',title:'3 Hours',price:20,duration:'180 min',tag:'Everyday'},
@@ -669,7 +671,6 @@ function listenToTransactionById(checkoutId, newDbRefKey) {
 
     stopTransactionListener();
 
-    // Listen to both the transactions path (from index.html sync) or ledger key
     const txRef = window.fbRef(window.dbRef, "transactions/" + checkoutId);
 
     activeTransactionUnsubscribe = window.fbOnValue(
@@ -1367,7 +1368,6 @@ if($('startPayment')){
     return toast('Enter a valid Kenyan phone number, e.g. 07xxxxxxxx.');
   }
 
-  const endpoint = "https://johnnylin.karanjajmwangi-10.workers.dev/api/stk-push";
   const plan = selectedPlan;
   let macAddress = '';
   if(selectedPurchaseType === 'Ethernet MAC' || selectedPurchaseType === 'Television') {
@@ -1391,7 +1391,7 @@ if($('startPayment')){
   showCheckoutMessage('Sending M-Pesa prompt to ' + phone + '. Enter your PIN on your phone...', 'info');
   
   try{
-   const response = await fetch(endpoint, {
+   const response = await fetch(STK_ENDPOINT, {
      method: 'POST',
      headers: { 'Content-Type': 'application/json' },
      body: JSON.stringify(requestBody)
@@ -1436,7 +1436,6 @@ if($('startPayment')){
    showCheckoutMessage(`✓ STK Push request sent successfully to ${phone}. Please check your phone and enter your M-Pesa PIN.`, 'info');
    toast('STK push prompt sent.');
 
-   // Listen directly using the exact pattern from index.html
    listenToTransactionById(checkoutId, newDbRefKey);
 
    button.disabled = false;
@@ -1449,7 +1448,7 @@ if($('startPayment')){
    }
 
    if(window.dbRef && window.fbRef && window.fbPush) {
-     await window.fbPush(window.fbRef(window.dbRef, 'errorLogs'), {time: new Date().toLocaleString(), endpoint, status: 'GATEWAY ERROR', details: exactReason});
+     await window.fbPush(window.fbRef(window.dbRef, 'errorLogs'), {time: new Date().toLocaleString(), endpoint: STK_ENDPOINT, status: 'GATEWAY ERROR', details: exactReason});
    }
    showCheckoutMessage(exactReason, 'error');
    toast('Transaction failed.');
